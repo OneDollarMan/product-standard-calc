@@ -1,0 +1,22 @@
+services:
+  product-standard-app:
+    build: .
+    command: python main.py
+    volumes:
+      - ./src:/src
+    container_name: product-standard-app
+    env_file: ".env"
+    depends_on:
+      - product-standard-db
+
+  product-standard-db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    env_file: ".env"
+    container_name: product-standard-db
+    volumes:
+      - product-standard-db-volume:/var/lib/postgresql/data/
+
+volumes:
+  product-standard-db-volume:
