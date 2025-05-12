@@ -1,12 +1,10 @@
+import sys
 import duckdb
 import polars as pl
 from polars import col
 from tqdm import tqdm
 
-# Подключение к DuckDB
-conn = duckdb.connect()
 
-# Ваш исходный запрос
 query = """
         WITH avg_sales_data AS (SELECT * REPLACE(
         CAST(REPLACE(Avg_sales_pc, ',', '.') AS DECIMAL(10,2)) AS Avg_sales_pc
@@ -49,10 +47,6 @@ query = """
                  LEFT JOIN cat_equip ce ON a.cat4 = "Группа 4" \
                  LEFT JOIN capacity cap ON ce."Тип оборудования" = cap."Тип оборудования" AND Store = "Код Склада" \
         """
-
-# Получаем исходные данные
-df = pl.from_arrow(conn.execute(query).arrow())
-df_equip = pl.from_arrow(conn.execute("SELECT * FROM read_csv_auto('../static/capacity.csv',header = True )").arrow())
 
 
 # Алгоритм выбора эталона
@@ -141,15 +135,19 @@ def select_etalon(df, df_equip):
     return df.to_pandas()
 
 
-# Применяем алгоритм
+def main():
+    conn = duckdb.connect()
+    df_data = pl.from_arrow(conn.execute(query).arrow())
+    df_equip = pl.from_arrow(
+        conn.execute("SELECT * FROM read_csv_auto('../static/capacity.csv',header = True )").arrow()
+    )
+    result_df = select_etalon(df_data, df_equip)
+    result_df.to_csv('etalon_selection_result.csv', index=False, sep=';', encoding='utf-8-sig')
+    conn.close()
 
-result_df = select_etalon(df, df_equip)
 
-# Показываем результат
-print(result_df.head(20))
-
-# Сохраняем результат
-result_df.to_csv('etalon_selection_result.csv', index=False, sep=';', encoding='utf-8-sig')
-
-# Закрываем соединение
-conn.close()
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)
