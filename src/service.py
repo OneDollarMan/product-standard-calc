@@ -4,6 +4,13 @@ import pandas as pd
 from db import engine
 
 
+def import_data_from_files(session: AsyncSession):
+    equip_q = f"copy equipments FROM 'static/capacity.csv' WITH (FORMAT csv, HEADER true, DELIMITER ';', NULL '')"
+
+
+    session.execute(text(equip_q))
+    session.commit()
+
 def aggregate_data(session: AsyncSession):
     # Агрегация продуктов и оборудования
     trunc_agg_query = "DELETE FROM agg_data;"
@@ -16,7 +23,7 @@ def aggregate_data(session: AsyncSession):
             sale_pcs,
             sale_share,
             cumulative_share,
-            equipment_id,
+            equipment_type,
             capacity
         )
         SELECT
@@ -27,13 +34,13 @@ def aggregate_data(session: AsyncSession):
             p.sale_pcs,
             p.sale_share,
             p.cumulative_share,
-            c.equipment_id,
+            c.equipment_type,
             e.capacity
         FROM products p
         JOIN categories c
             ON p.category_id = c.category_id
         JOIN equipments e
-            ON p.storage_id = e.storage_id AND c.equipment_id = e.equipment_id;
+            ON p.storage_id = e.storage_id AND c.equipment_type = e.equipment_type;
     """
 
     session.execute(text(trunc_agg_query))
@@ -77,13 +84,13 @@ def select_products(equipments_df: pd.DataFrame, agg_data_df: pd.DataFrame) -> p
 
     # Итерируемся по каждому оборудованию
     for _, equipment in equipments_df.iterrows():
-        equip_id = equipment["equipment_id"]
+        equip_type = equipment["equipment_type"]
         storage_id = equipment["storage_id"]
         capacity = equipment["capacity"]
 
         # Фильтрация товаров по данному оборудованию
         equip_products = agg_data_df[
-            (agg_data_df["equipment_id"] == equip_id) &
+            (agg_data_df["equipment_type"] == equip_type) &
             (agg_data_df["storage_id"] == storage_id)
             ].copy()
 

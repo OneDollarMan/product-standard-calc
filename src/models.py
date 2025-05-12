@@ -1,5 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, Double
+from sqlalchemy import Integer, Double, Text
+
 
 class Base(DeclarativeBase):
     pass
@@ -9,9 +10,9 @@ class Base(DeclarativeBase):
 class Product(Base):
     __tablename__ = "products"
 
-    storage_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    storage_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    category_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_id: Mapped[str] = mapped_column(Text, primary_key=True)
     rating: Mapped[int] = mapped_column(Integer)
     sale_pcs: Mapped[float] = mapped_column(Double)
     sale_share: Mapped[float] = mapped_column(Double)
@@ -22,8 +23,8 @@ class Product(Base):
 class Equipment(Base):
     __tablename__ = "equipments"
 
-    storage_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    equipment_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    storage_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    equipment_type: Mapped[str] = mapped_column(Text, primary_key=True)
     capacity: Mapped[int] = mapped_column(Integer)
 
 
@@ -31,22 +32,22 @@ class Equipment(Base):
 class Category(Base):
     __tablename__ = "categories"
 
-    equipment_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    equipment_type: Mapped[str] = mapped_column(Text, primary_key=True)
 
 
 # Промежуточные данные
 class AggData(Base):
     __tablename__ = "agg_data"
 
-    storage_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    storage_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    category_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    equipment_type: Mapped[str] = mapped_column(Text, primary_key=True)
     rating: Mapped[int] = mapped_column(Integer)
     sale_pcs: Mapped[float] = mapped_column(Double)
     sale_share: Mapped[float] = mapped_column(Double)
     cumulative_share: Mapped[float] = mapped_column(Double)
-    equipment_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     capacity: Mapped[int] = mapped_column(Integer)
 
 
@@ -54,9 +55,9 @@ class AggData(Base):
 class SelectedProduct(Base):
     __tablename__ = 'selected_products'
 
-    storage_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    product_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    storage_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    category_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    product_id: Mapped[str] = mapped_column(Text, primary_key=True)
     rating: Mapped[int] = mapped_column(Integer)
     sale_pcs: Mapped[float] = mapped_column(Double)
     sale_share: Mapped[float] = mapped_column(Double)
@@ -67,6 +68,6 @@ class SelectedProduct(Base):
 class ProductStandard(Base):
     __tablename__ = 'product_standards'
 
-    storage_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    storage_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    category_id: Mapped[str] = mapped_column(Text, primary_key=True)
     amount: Mapped[int] = mapped_column(Integer)

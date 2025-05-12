@@ -1,10 +1,12 @@
 services:
   product-standard-app:
     build: .
-    command: python main.py
+    command: python Расчет_эталона.py
     volumes:
       - ./src:/src
+      - ./static:/static
     container_name: product-standard-app
+    tty: true
     env_file: ".env"
     depends_on:
       - product-standard-db
@@ -17,6 +19,7 @@ services:
     container_name: product-standard-db
     volumes:
       - product-standard-db-volume:/var/lib/postgresql/data/
+      - ./static:/static
 
 volumes:
   product-standard-db-volume:
