@@ -83,10 +83,8 @@ def select_etalon(df, df_equip):
         total_etalon = 0
         selected_items = set()
 
-        total_iterations = 0
         # Пока не достигнута квота и есть товары для выбора
         while total_etalon < capacity and len(selected_items) < len(subset):
-            total_iterations += 1
             # Находим категорию с минимальной накопленной суммой
             cat4_stats = (
                 subset.filter(~col('Item').is_in(selected_items))
@@ -140,7 +138,7 @@ def select_etalon(df, df_equip):
                 selected_items.add(item)
             else:
                 break
-    return df
+    return df.to_pandas()
 
 
 # Применяем алгоритм
