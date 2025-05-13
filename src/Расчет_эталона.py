@@ -74,11 +74,39 @@ def select_etalon(df, df_equip):
         )
 
         # Инициализация
-        total_etalon = 0
+        total_etalon_skus = 0
         selected_items = set()
 
+        if len(subset) <= capacity:
+            # Помечаем все товары в subset как эталоны
+            df = df.with_columns(
+                pl.when(
+                    (col('Store') == store) &
+                    (col('equip_type') == equip)
+                ).then(1).otherwise(col('etalon')).alias('etalon')
+            )
+
+            # Обновляем accumulated_part для всех категорий в subset
+            cat4_sums = (
+                subset
+                .group_by('cat4')
+                .agg(pl.col('part_sales').sum().alias('total_part_sales'))
+            )
+
+            # Добавляем accumulated_part для каждой категории
+            for cat4_row in cat4_sums.iter_rows(named=True):
+                df = df.with_columns(
+                    pl.when(
+                        (col('Store') == store) &
+                        (col('cat4') == cat4_row['cat4'])
+                    ).then(col('accumulated_part') + cat4_row['total_part_sales'])
+                    .otherwise(col('accumulated_part'))
+                    .alias('accumulated_part')
+                )
+            continue
+
         # Пока не достигнута квота и есть товары для выбора
-        while total_etalon < capacity and len(selected_items) < len(subset):
+        while total_etalon_skus < capacity:
             # Находим категорию с минимальной накопленной суммой
             cat4_stats = (
                 subset.filter(~col('Item').is_in(selected_items))
@@ -110,7 +138,7 @@ def select_etalon(df, df_equip):
             part_sales = candidate['part_sales'][0]
 
             # Проверяем, не превысит ли добавление квоту
-            if total_etalon + part_sales <= capacity:
+            if total_etalon_skus < capacity:
                 # Обновляем etalon и accumulated_part
                 df = df.with_columns(
                     pl.when(
@@ -128,7 +156,7 @@ def select_etalon(df, df_equip):
                     .alias('accumulated_part')
                 )
 
-                total_etalon += part_sales
+                total_etalon_skus += 1
                 selected_items.add(item)
             else:
                 break
