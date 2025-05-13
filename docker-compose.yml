@@ -1,7 +1,7 @@
 services:
   product-standard-app:
     build: .
-    command: python Расчет_эталона.py
+    command: python main.py
     volumes:
       - ./src:/src
       - ./static:/static
